@@ -21,6 +21,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/health")
+@app.post("/health")
+def health_check():
+    return {"status": "ok"}
+
+@app.post("/v1/chat/completions")
+@app.post("/")
+def chat_completions(payload: dict = None):
+    return {
+        "id": "chatcmpl-gateway",
+        "object": "chat.completion",
+        "created": 1700000000,
+        "model": "parts-controller-gateway",
+        "choices": [{
+            "index": 0,
+            "message": {"role": "assistant", "content": "Gateway connection active"},
+            "finish_reason": "stop"
+        }]
+    }
 
 # Global State Management
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
