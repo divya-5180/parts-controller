@@ -1,0 +1,20 @@
+{
+  "PART-001": {
+    "voltage_v": 12.0,
+    "connector_type": "barrel_5.5mm",
+    "max_power_w": 60.0,
+    "stock_count": 15
+  },
+  "PART-002": {
+    "voltage_v": 5.0,
+    "connector_type": "usb_c",
+    "max_power_w": 20.0,
+    "stock_count": 0
+  },
+  "PART-003": {
+    "voltage_v": 24.0,
+    "connector_type": "terminal_block",
+    "max_power_w": 120.0,
+    "stock_count": 4
+  }
+}

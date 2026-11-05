@@ -1,0 +1,14 @@
+[
+  {
+    "request_id": "REQ-101",
+    "decision": "dispatch(PART-001)"
+  },
+  {
+    "request_id": "REQ-102",
+    "decision": "refer(Compatible candidate parts were out of stock upon verification.)"
+  },
+  {
+    "request_id": "REQ-103",
+    "decision": "refer(Unclear requirements or ambiguities: ['Missing voltage or connector specifications.'])"
+  }
+]

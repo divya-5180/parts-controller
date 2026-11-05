@@ -1,0 +1,14 @@
+[
+  {
+    "request_id": "REQ-101",
+    "prompt": "I need a 12V power adapter with a 5.5mm barrel jack that can supply at least 45W."
+  },
+  {
+    "request_id": "REQ-102",
+    "prompt": "Looking for a 5V USB-C plug charger."
+  },
+  {
+    "request_id": "REQ-103",
+    "prompt": "Need something that works for power."
+  }
+]

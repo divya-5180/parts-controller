@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parts Request Controller Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <!-- Navigation Bar -->
+    <nav class="border-b border-slate-800 bg-slate-950 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-microchip text-indigo-500 text-2xl"></i>
+            <h1 class="font-bold text-xl tracking-wide">Parts Request Controller</h1>
+        </div>
+        <button onclick="resetLedger()" class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 rounded-lg text-sm transition">
+            <i class="fa-solid fa-rotate-right mr-1"></i> Reset Budget & Logs
+        </button>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <!-- Analytics & Budget Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-slate-800/60 border border-slate-700/50 p-5 rounded-xl shadow-lg">
+                <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Remaining Budget</div>
+                <div class="text-3xl font-extrabold text-indigo-400" id="stat-remaining">100.00 <span class="text-sm font-normal text-slate-400">units</span></div>
+                <div class="w-full bg-slate-700 h-2 rounded-full mt-3 overflow-hidden">
+                    <div id="budget-bar" class="bg-indigo-500 h-full w-full transition-all duration-500"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/50 p-5 rounded-xl shadow-lg">
+                <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Units Spent</div>
+                <div class="text-3xl font-extrabold text-amber-400" id="stat-spent">0.00</div>
+                <div class="text-xs text-slate-500 mt-2">Spent across all tools</div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/50 p-5 rounded-xl shadow-lg">
+                <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Dispatched Parts</div>
+                <div class="text-3xl font-extrabold text-emerald-400" id="stat-dispatched">0</div>
+                <div class="text-xs text-emerald-500/80 mt-2"><i class="fa-solid fa-circle-check mr-1"></i> Compatible & In-stock</div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/50 p-5 rounded-xl shadow-lg">
+                <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Human Referrals</div>
+                <div class="text-3xl font-extrabold text-rose-400" id="stat-referred">0</div>
+                <div class="text-xs text-rose-400/80 mt-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Uncertain / Out of Stock</div>
+            </div>
+        </div>
+
+        <!-- Request Submission Form & Live Action Area -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-slate-800/60 border border-slate-700/50 p-6 rounded-xl shadow-lg lg:col-span-1 space-y-4">
+                <h2 class="text-lg font-bold text-white flex items-center">
+                    <i class="fa-solid fa-paper-plane text-indigo-400 mr-2"></i> Submit Request
+                </h2>
+                
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Request ID</label>
+                    <input type="text" id="input-req-id" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500" placeholder="e.g. REQ-99">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Natural Language Description</label>
+                    <textarea id="input-prompt" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500" placeholder="e.g. I need a 12V 5.5mm barrel adapter with at least 45W capacity."></textarea>
+                </div>
+
+                <button onclick="submitSingleRequest()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-lg shadow-indigo-600/30">
+                    Execute Agent Controller
+                </button>
+            </div>
+
+            <!-- Decisions & Audit Trail Table -->
+            <div class="bg-slate-800/60 border border-slate-700/50 p-6 rounded-xl shadow-lg lg:col-span-2">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center justify-between">
+                    <span><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Real-Time Audit Ledger</span>
+                    <span class="text-xs font-normal text-slate-400" id="total-req-count">0 Requests Processed</span>
+                </h2>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-900/80 text-slate-400 text-xs uppercase border-b border-slate-700">
+                            <tr>
+                                <th class="px-4 py-3">ID</th>
+                                <th class="px-4 py-3">Prompt</th>
+                                <th class="px-4 py-3">Decision</th>
+                                <th class="px-4 py-3">Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledger-table-body" class="divide-y divide-slate-700/50">
+                            <tr>
+                                <td colspan="4" class="text-center py-8 text-slate-500">No requests processed yet. Submit a request to view evidence.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frontend Logic -->
+    <script>
+        async function fetchSummary() {
+            const res = await fetch('/api/summary');
+            const data = await res.json();
+            updateUI(data);
+        }
+
+        function updateUI(data) {
+            const summary = data.summary;
+            document.getElementById('stat-remaining').innerHTML = `${summary.remaining_budget.toFixed(2)} <span class="text-sm font-normal text-slate-400">units</span>`;
+            document.getElementById('stat-spent').innerText = summary.total_units_spent.toFixed(2);
+            document.getElementById('stat-dispatched').innerText = summary.dispatched;
+            document.getElementById('stat-referred').innerText = summary.referred;
+            document.getElementById('total-req-count').innerText = `${summary.total_requests} Requests Processed`;
+
+            // Update Progress Bar
+            const pct = Math.max(0, (summary.remaining_budget / summary.initial_budget) * 100);
+            const bar = document.getElementById('budget-bar');
+            bar.style.width = `${pct}%`;
+            if (pct < 20) bar.className = "bg-rose-500 h-full transition-all duration-500";
+            else if (pct < 50) bar.className = "bg-amber-500 h-full transition-all duration-500";
+            else bar.className = "bg-indigo-500 h-full transition-all duration-500";
+
+            // Render Table
+            const tbody = document.getElementById('ledger-table-body');
+            const evidence = data.evidence || {};
+            const keys = Object.keys(evidence);
+
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-500">No requests processed yet. Submit a request to view evidence.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = keys.reverse().map(id => {
+                const item = evidence[id];
+                const isDispatch = item.action === "DISPATCH";
+                const badgeClass = isDispatch ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20";
+                
+                return `
+                    <tr class="hover:bg-slate-800/40 transition">
+                        <td class="px-4 py-3 font-mono text-xs text-indigo-300 font-semibold">${item.request_id}</td>
+                        <td class="px-4 py-3 text-slate-300 max-w-xs truncate" title="${item.raw_prompt}">${item.raw_prompt}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2.5 py-1 border rounded-full text-xs font-semibold ${badgeClass}">
+                                ${item.action}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">${item.reason}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function submitSingleRequest() {
+            const reqId = document.getElementById('input-req-id').value.trim() || `REQ-${Math.floor(Math.random()*900 + 100)}`;
+            const prompt = document.getElementById('input-prompt').value.trim();
+            if (!prompt) {
+                alert("Please enter a parts request description.");
+                return;
+            }
+
+            const response = await fetch('/api/process/single', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ request_id: reqId, prompt: prompt })
+            });
+
+            if (response.ok) {
+                document.getElementById('input-prompt').value = '';
+                document.getElementById('input-req-id').value = '';
+                fetchSummary();
+            }
+        }
+
+        async function resetLedger() {
+            if (confirm("Reset tool budget and clear decision evidence?")) {
+                await fetch('/api/reset', { method: 'POST' });
+                fetchSummary();
+            }
+        }
+
+        // Initial Load
+        fetchSummary();
+    </script>
+</body>
+</html>
